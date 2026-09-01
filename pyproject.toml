@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "navi-naf"
+version = "0.1.0"
+description = "NAVI: assistente de atendimento do NAF com Telegram, FastAPI e RAG"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "aiogram>=3.20,<4",
+  "fastapi>=0.116,<1",
+  "google-genai>=1.50,<2",
+  "httpx>=0.28,<1",
+  "llama-index-core>=0.14,<0.15",
+  "llama-index-embeddings-google-genai>=0.5,<0.6",
+  "pydantic-settings>=2.10,<3",
+  "pypdf>=6,<7",
+  "uvicorn>=0.35,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.4,<10",
+  "pytest-asyncio>=1.1,<2",
+  "ruff>=0.12,<1",
+]
+
+[project.scripts]
+navi = "navi.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+

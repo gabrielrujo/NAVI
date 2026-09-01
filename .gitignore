@@ -1,0 +1,17 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# O indice e derivado dos PDFs e deve ser recriado em cada ambiente.
+data/index/*
+!data/index/.gitkeep
+data/index.backup/
+data/navi-index-*/

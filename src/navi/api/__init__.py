@@ -1,0 +1,2 @@
+"""Canal HTTP do NAVI."""
+
