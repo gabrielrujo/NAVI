@@ -14,4 +14,5 @@ build/
 data/index/*
 !data/index/.gitkeep
 data/index.backup/
+data/index.ingest/
 data/navi-index-*/

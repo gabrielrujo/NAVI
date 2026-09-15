@@ -19,9 +19,7 @@ class Settings(BaseSettings):
 
     provider: Literal["gemini"] = Field(default="gemini", validation_alias="NAVI_PROVIDER")
     gemini_api_key: SecretStr | None = Field(default=None, validation_alias="GEMINI_API_KEY")
-    gemini_model: str = Field(
-        default="gemini-2.5-flash-lite", validation_alias="GEMINI_MODEL"
-    )
+    gemini_model: str = Field(default="gemini-2.5-flash-lite", validation_alias="GEMINI_MODEL")
     gemini_base_url: str = Field(
         default="https://generativelanguage.googleapis.com/v1beta",
         validation_alias="GEMINI_BASE_URL",
@@ -40,10 +38,23 @@ class Settings(BaseSettings):
     embedding_model: str = Field(
         default="gemini-embedding-2", validation_alias="NAVI_EMBEDDING_MODEL"
     )
-    rag_top_k: int = Field(default=5, ge=1, le=20, validation_alias="NAVI_RAG_TOP_K")
-    rag_min_score: float = Field(
-        default=0.20, ge=-1, le=1, validation_alias="NAVI_RAG_MIN_SCORE"
+    embedding_batch_size: int = Field(
+        default=20, ge=1, le=100, validation_alias="NAVI_EMBEDDING_BATCH_SIZE"
     )
+    embedding_texts_per_minute: int = Field(
+        default=100, ge=1, validation_alias="NAVI_EMBEDDING_TEXTS_PER_MINUTE"
+    )
+    embedding_max_attempts: int = Field(
+        default=5, ge=1, le=10, validation_alias="NAVI_EMBEDDING_MAX_ATTEMPTS"
+    )
+    embedding_retry_base_seconds: float = Field(
+        default=2.0, gt=0, validation_alias="NAVI_EMBEDDING_RETRY_BASE_SECONDS"
+    )
+    embedding_retry_max_seconds: float = Field(
+        default=120.0, gt=0, validation_alias="NAVI_EMBEDDING_RETRY_MAX_SECONDS"
+    )
+    rag_top_k: int = Field(default=5, ge=1, le=20, validation_alias="NAVI_RAG_TOP_K")
+    rag_min_score: float = Field(default=0.20, ge=-1, le=1, validation_alias="NAVI_RAG_MIN_SCORE")
     chunk_size: int = Field(default=900, ge=200, validation_alias="NAVI_CHUNK_SIZE")
     chunk_overlap: int = Field(default=150, ge=0, validation_alias="NAVI_CHUNK_OVERLAP")
 
@@ -76,4 +87,3 @@ class Settings(BaseSettings):
         if not token:
             raise ConfigurationError("Defina TELEGRAM_BOT_TOKEN no arquivo .env.")
         return token
-

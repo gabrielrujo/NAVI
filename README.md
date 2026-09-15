@@ -48,6 +48,21 @@ O comando envia o texto extraído dos PDFs à API de embeddings do Gemini. Para 
 um índice existente, use `navi ingest --rebuild`; o índice anterior será mantido em
 `data/index.backup`.
 
+A ingestão respeita a cota por texto do endpoint de embeddings, inclusive quando vários
+textos são enviados em uma única chamada em lote. Cada lote concluído é salvo em
+`data/index.ingest/embeddings.json`. Se houver uma interrupção ou um erro de rate limit,
+execute novamente o mesmo comando: os embeddings presentes nesse checkpoint serão
+reutilizados. Um índice válido só é substituído depois que todos os embeddings e arquivos
+do novo índice estiverem prontos.
+
+Os limites podem ser ajustados por ambiente sem mudar o modelo:
+
+- `NAVI_EMBEDDING_BATCH_SIZE` (padrão: `20`);
+- `NAVI_EMBEDDING_TEXTS_PER_MINUTE` (padrão: `100`);
+- `NAVI_EMBEDDING_MAX_ATTEMPTS` (padrão: `5`);
+- `NAVI_EMBEDDING_RETRY_BASE_SECONDS` (padrão: `2`);
+- `NAVI_EMBEDDING_RETRY_MAX_SECONDS` (padrão: `120`).
+
 ## Executar
 
 Bot do Telegram em long polling:

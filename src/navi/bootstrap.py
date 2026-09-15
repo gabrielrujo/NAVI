@@ -14,11 +14,12 @@ from navi.providers.gemini import GeminiProvider
 from navi.services.assistant import AssistantService
 
 
-def build_embedding_model(settings: Settings) -> Any:
+def build_embedding_model(settings: Settings, *, retries: int = 3) -> Any:
     return GoogleGenAIEmbedding(
         model_name=settings.embedding_model,
         api_key=settings.require_gemini_api_key(),
-        embed_batch_size=20,
+        embed_batch_size=settings.embedding_batch_size,
+        retries=retries,
         embedding_config=EmbedContentConfig(output_dimensionality=768),
     )
 
@@ -65,4 +66,3 @@ def build_container(settings: Settings) -> ApplicationContainer:
         max_question_chars=settings.max_question_chars,
     )
     return ApplicationContainer(assistant=assistant, knowledge_base=knowledge_base, llm=llm)
-

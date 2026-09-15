@@ -12,7 +12,11 @@ from navi.bootstrap import build_container, build_embedding_model
 from navi.channels.telegram.bot import run_telegram
 from navi.config import Settings
 from navi.domain.models import ConfigurationError
-from navi.infrastructure.rag.ingestion import ingest_documents, stats_as_json
+from navi.infrastructure.rag.ingestion import (
+    EmbeddingIngestionPolicy,
+    ingest_documents,
+    stats_as_json,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -47,11 +51,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             stats = ingest_documents(
                 documents_dir=settings.documents_dir,
                 storage_dir=settings.index_dir,
-                embed_model=build_embedding_model(settings),
+                # A ingestao controla o retry para poder respeitar RetryInfo e salvar checkpoints.
+                embed_model=build_embedding_model(settings, retries=1),
                 embedding_model_name=settings.embedding_model,
                 chunk_size=settings.chunk_size,
                 chunk_overlap=settings.chunk_overlap,
                 rebuild=args.rebuild,
+                embedding_policy=EmbeddingIngestionPolicy(
+                    batch_size=settings.embedding_batch_size,
+                    texts_per_minute=settings.embedding_texts_per_minute,
+                    max_attempts=settings.embedding_max_attempts,
+                    retry_base_seconds=settings.embedding_retry_base_seconds,
+                    retry_max_seconds=settings.embedding_retry_max_seconds,
+                ),
             )
             print(stats_as_json(stats))
             return 0
@@ -83,4 +95,3 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
