@@ -16,7 +16,7 @@ class GeminiProvider:
         self,
         *,
         api_key: str,
-        model: str = "gemini-2.5-flash-lite",
+        model: str = "gemini-3.5-flash-lite",
         base_url: str = "https://generativelanguage.googleapis.com/v1beta",
         timeout_seconds: float = 30.0,
         max_output_tokens: int = 1024,
@@ -110,4 +110,3 @@ class GeminiProvider:
     async def aclose(self) -> None:
         if self._owns_client:
             await self._client.aclose()
-

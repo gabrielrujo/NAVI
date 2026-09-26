@@ -5,8 +5,17 @@ import json
 import httpx
 import pytest
 
+from navi.config import Settings
 from navi.domain.models import ChatMessage, MessageRole, ProviderError
 from navi.providers.gemini import GeminiProvider
+
+
+def test_default_model_matches_provider_and_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("GEMINI_MODEL", raising=False)
+    settings = Settings(_env_file=None)
+    provider = GeminiProvider(api_key="test-key")
+
+    assert settings.gemini_model == provider.model_name == "gemini-3.5-flash-lite"
 
 
 @pytest.mark.asyncio
@@ -51,4 +60,3 @@ async def test_gemini_provider_hides_error_payload_details() -> None:
             messages=[ChatMessage(MessageRole.USER, "Pergunta")],
         )
     await client.aclose()
-

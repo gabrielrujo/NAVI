@@ -4,7 +4,7 @@ Protótipo em Python de um assistente de atendimento do Núcleo de Apoio Contáb
 Fiscal (NAF). O Telegram é somente um adaptador: o mesmo `AssistantService` já é
 exposto por FastAPI e pode ser reutilizado futuramente por um totem.
 
-O modelo generativo inicial é o `gemini-2.5-flash-lite`. A geração está isolada pelo
+O modelo generativo padrão é o `gemini-3.5-flash-lite`. A geração está isolada pelo
 contrato `LLMProvider`; nenhum componente do domínio, do RAG, da API ou do Telegram
 depende do Gemini. O modelo local ainda **não** foi implementado.
 
@@ -20,7 +20,8 @@ FastAPI ────────────┘          │
 
 O LlamaIndex apenas recupera trechos. A resposta final é sempre solicitada pela porta
 `LLMProvider`, o que evita acoplamento entre RAG e modelo generativo. Os nomes e páginas
-dos PDFs são preservados e retornados como fontes.
+dos PDFs são preservados. O Telegram mostra os materiais consultados ao final da
+resposta; essa lista não substitui a revisão do conteúdo pela equipe do NAF.
 
 ## Preparação
 
@@ -36,6 +37,7 @@ cp .env.example .env
 Edite `.env` e informe:
 
 - `GEMINI_API_KEY`: chave criada no Google AI Studio;
+- `GEMINI_MODEL`: modelo generativo (padrão: `gemini-3.5-flash-lite`);
 - `TELEGRAM_BOT_TOKEN`: token criado pelo BotFather.
 
 Os cinco PDFs fornecidos devem estar em `data/documents/`. Para criar o índice vetorial:
@@ -110,11 +112,12 @@ O `AssistantService`, o RAG e todos os canais permanecem inalterados.
 ## Limites do protótipo
 
 - o histórico é mantido apenas em memória e some ao reiniciar;
-- long polling é apropriado para desenvolvimento; produção deve usar webhook;
+- o bot usa long polling; para operação contínua, execute-o como serviço supervisionado.
+  Webhook é uma alternativa quando a infraestrutura ou a escala exigir;
 - as respostas são informativas e não substituem atendimento contábil, fiscal ou jurídico;
 - não envie documentos sigilosos ou dados pessoais sem avaliar as regras de privacidade e
   o tratamento de dados do provedor.
 
-Referências técnicas: [Gemini 2.5 Flash-Lite](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash-lite),
+Referências técnicas: [Gemini 3.5 Flash-Lite](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite),
 [embeddings do Gemini](https://ai.google.dev/gemini-api/docs/embeddings) e
 [long polling do Aiogram](https://docs.aiogram.dev/en/latest/dispatcher/long_polling.html).

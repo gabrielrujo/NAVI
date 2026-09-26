@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     provider: Literal["gemini"] = Field(default="gemini", validation_alias="NAVI_PROVIDER")
     gemini_api_key: SecretStr | None = Field(default=None, validation_alias="GEMINI_API_KEY")
-    gemini_model: str = Field(default="gemini-2.5-flash-lite", validation_alias="GEMINI_MODEL")
+    gemini_model: str = Field(default="gemini-3.5-flash-lite", validation_alias="GEMINI_MODEL")
     gemini_base_url: str = Field(
         default="https://generativelanguage.googleapis.com/v1beta",
         validation_alias="GEMINI_BASE_URL",

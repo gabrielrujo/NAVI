@@ -4,7 +4,11 @@ from navi.domain.models import AssistantResponse
 
 
 def format_response(response: AssistantResponse) -> str:
-    return response.answer
+    if not response.sources:
+        return response.answer
+
+    sources = "\n".join(f"• {source.label}" for source in response.sources)
+    return f"{response.answer.rstrip()}\n\nMateriais consultados:\n{sources}"
 
 
 def split_telegram_text(text: str, limit: int = 4000) -> list[str]:
