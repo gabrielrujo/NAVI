@@ -61,6 +61,9 @@ class ProviderError(NaviError):
     """Falha ao obter uma resposta do provider de IA."""
 
 
+class EmbeddingError(NaviError):
+    """Falha ao gerar embeddings ou consultar um indice que depende deles."""
+
+
 class ConfigurationError(NaviError):
     """Configuracao obrigatoria ausente ou invalida."""
-

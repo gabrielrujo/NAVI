@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from navi.bootstrap import ApplicationContainer
 from navi.domain.models import (
+    EmbeddingError,
     InvalidQuestionError,
     KnowledgeBaseNotReadyError,
     ProviderError,
@@ -62,6 +63,11 @@ def create_app(container: ApplicationContainer) -> FastAPI:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(exc)) from exc
         except KnowledgeBaseNotReadyError as exc:
             raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc)) from exc
+        except EmbeddingError as exc:
+            raise HTTPException(
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+                "A base de conhecimento esta temporariamente indisponivel.",
+            ) from exc
         except ProviderError as exc:
             raise HTTPException(
                 status.HTTP_502_BAD_GATEWAY,
@@ -80,4 +86,3 @@ def create_app(container: ApplicationContainer) -> FastAPI:
         await container.assistant.clear_history(f"api:{session_id}")
 
     return app
-

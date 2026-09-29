@@ -10,6 +10,7 @@ from aiogram.types import Message
 from navi.bootstrap import ApplicationContainer
 from navi.channels.telegram.formatting import format_response, split_telegram_text
 from navi.domain.models import (
+    EmbeddingError,
     InvalidQuestionError,
     KnowledgeBaseNotReadyError,
     ProviderError,
@@ -62,6 +63,13 @@ def build_router() -> Router:
         except KnowledgeBaseNotReadyError:
             await message.answer(
                 "Minha base de conhecimento ainda está sendo preparada. Tente novamente mais tarde."
+            )
+            return
+        except EmbeddingError:
+            logger.exception("Falha nos embeddings ao responder mensagem do Telegram")
+            await message.answer(
+                "A base de conhecimento está temporariamente indisponível. "
+                "Tente novamente em instantes."
             )
             return
         except ProviderError:

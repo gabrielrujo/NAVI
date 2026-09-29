@@ -8,10 +8,15 @@ from collections.abc import Sequence
 import uvicorn
 
 from navi.api.app import create_app
-from navi.bootstrap import build_container, build_embedding_model
+from navi.bootstrap import (
+    build_container,
+    build_gemini_embedding_provider,
+    build_local_embedding_provider,
+)
 from navi.channels.telegram.bot import run_telegram
 from navi.config import Settings
-from navi.domain.models import ConfigurationError
+from navi.domain.models import ConfigurationError, EmbeddingError
+from navi.infrastructure.portable import portable_layout
 from navi.infrastructure.rag.ingestion import (
     EmbeddingIngestionPolicy,
     ingest_documents,
@@ -29,8 +34,22 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Recria um indice existente e conserva o anterior em data/index.backup",
     )
+    ingest_local = subcommands.add_parser(
+        "ingest-local", help="Cria o indice portátil usando embeddings locais"
+    )
+    ingest_local.add_argument(
+        "--rebuild",
+        action="store_true",
+        help="Recria o indice local e conserva o anterior em runtime/index.backup",
+    )
     subcommands.add_parser("api", help="Inicia o canal HTTP/FastAPI")
     subcommands.add_parser("telegram", help="Inicia o bot do Telegram via long polling")
+    desktop = subcommands.add_parser("app", help="Abre o aplicativo gráfico local")
+    desktop.add_argument(
+        "--fullscreen",
+        action="store_true",
+        help="Abre a janela em tela cheia para simular o futuro modo totem",
+    )
     return parser
 
 
@@ -48,12 +67,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         if args.command == "ingest":
+            embeddings = build_gemini_embedding_provider(settings)
             stats = ingest_documents(
                 documents_dir=settings.documents_dir,
                 storage_dir=settings.index_dir,
                 # A ingestao controla o retry para poder respeitar RetryInfo e salvar checkpoints.
-                embed_model=build_embedding_model(settings, retries=1),
-                embedding_model_name=settings.embedding_model,
+                embed_model=embeddings.build_model(retries=1),
+                embedding_model_name=embeddings.model_name,
                 chunk_size=settings.chunk_size,
                 chunk_overlap=settings.chunk_overlap,
                 rebuild=args.rebuild,
@@ -64,9 +84,38 @@ def main(argv: Sequence[str] | None = None) -> int:
                     retry_base_seconds=settings.embedding_retry_base_seconds,
                     retry_max_seconds=settings.embedding_retry_max_seconds,
                 ),
+                embedding_provider_name=embeddings.provider_name,
             )
             print(stats_as_json(stats))
             return 0
+
+        if args.command == "ingest-local":
+            layout = portable_layout(settings)
+            layout.ensure()
+            embeddings = build_local_embedding_provider(settings)
+            stats = ingest_documents(
+                documents_dir=layout.documents,
+                storage_dir=layout.index,
+                embed_model=embeddings.build_model(retries=1),
+                embedding_model_name=embeddings.model_name,
+                chunk_size=settings.chunk_size,
+                chunk_overlap=settings.chunk_overlap,
+                rebuild=args.rebuild,
+                embedding_policy=EmbeddingIngestionPolicy(
+                    batch_size=settings.local_embedding_batch_size,
+                    texts_per_minute=1_000_000,
+                    max_attempts=1,
+                ),
+                embedding_provider_name=embeddings.provider_name,
+                checkpoint_path=settings.local_ingestion_checkpoint_path,
+            )
+            print(stats_as_json(stats))
+            return 0
+
+        if args.command == "app":
+            from navi.channels.desktop.app import run_desktop
+
+            return run_desktop(settings=settings, fullscreen=args.fullscreen)
 
         container = build_container(settings)
         if args.command == "api":
@@ -86,7 +135,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             )
             return 0
-    except (ConfigurationError, FileNotFoundError, FileExistsError, ValueError) as exc:
+    except (
+        ConfigurationError,
+        EmbeddingError,
+        FileNotFoundError,
+        FileExistsError,
+        ValueError,
+    ) as exc:
         logging.getLogger(__name__).error("%s", exc)
         return 2
 

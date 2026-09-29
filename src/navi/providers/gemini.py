@@ -37,6 +37,10 @@ class GeminiProvider:
     def model_name(self) -> str:
         return self._model
 
+    @property
+    def network_required(self) -> bool:
+        return True
+
     async def generate(
         self,
         *,

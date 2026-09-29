@@ -414,12 +414,14 @@ def ingest_documents(
     chunk_overlap: int,
     rebuild: bool = False,
     embedding_policy: EmbeddingIngestionPolicy | None = None,
+    embedding_provider_name: str = "gemini",
+    checkpoint_path: Path | None = None,
 ) -> IngestionStats:
     if chunk_overlap >= chunk_size:
         raise ValueError("NAVI_CHUNK_OVERLAP deve ser menor que NAVI_CHUNK_SIZE.")
     if (storage_dir / "docstore.json").exists() and not rebuild:
         raise FileExistsError(
-            f"Ja existe um indice em {storage_dir}. Use `navi ingest --rebuild` para recriar."
+            f"Ja existe um indice em {storage_dir}. Use a opcao `--rebuild` para recriar."
         )
 
     documents, sources = load_pdf_documents(documents_dir)
@@ -429,7 +431,7 @@ def ingest_documents(
         nodes=nodes,
         embed_model=embed_model,
         embedding_model_name=embedding_model_name,
-        checkpoint_path=_checkpoint_path(storage_dir),
+        checkpoint_path=checkpoint_path or _checkpoint_path(storage_dir),
         policy=embedding_policy or EmbeddingIngestionPolicy(),
     )
     logger.info("Embeddings concluidos; construindo o indice vetorial local.")
@@ -441,6 +443,7 @@ def ingest_documents(
         index.storage_context.persist(persist_dir=str(temp_dir))
         manifest = {
             "created_at": datetime.now(UTC).isoformat(),
+            "embedding_provider": embedding_provider_name,
             "embedding_model": embedding_model_name,
             "chunk_size": chunk_size,
             "chunk_overlap": chunk_overlap,
