@@ -15,6 +15,9 @@ class LLMProvider(Protocol):
     @property
     def model_name(self) -> str: ...
 
+    @property
+    def network_required(self) -> bool: ...
+
     async def generate(
         self,
         *,

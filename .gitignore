@@ -16,3 +16,17 @@ data/index/*
 data/index.backup/
 data/index.ingest/
 data/navi-index-*/
+
+# Conteúdo portátil: modelos, PDFs, embeddings e índices podem ser grandes ou sensíveis.
+runtime/models/*
+!runtime/models/.gitkeep
+runtime/documents/*
+!runtime/documents/.gitkeep
+runtime/index/*
+!runtime/index/.gitkeep
+runtime/index.backup/
+runtime/embeddings/*
+!runtime/embeddings/.gitkeep
+runtime/config/*
+!runtime/config/.gitkeep
+runtime/navi-index-*/

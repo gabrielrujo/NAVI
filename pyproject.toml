@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "navi-naf"
 version = "0.1.0"
-description = "NAVI: assistente de atendimento do NAF com Telegram, FastAPI e RAG"
+description = "NAVI: assistente do NAF com Telegram, desktop, FastAPI e RAG"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -21,6 +21,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+desktop = [
+  "PySide6>=6.8,<7",
+]
+local = [
+  "fastembed>=0.8,<0.9",
+  "llama-cpp-python>=0.3.35,<0.4",
+]
 dev = [
   "pytest>=8.4,<10",
   "pytest-asyncio>=1.1,<2",
@@ -44,4 +51,3 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ASYNC"]
-
